@@ -31,6 +31,7 @@
 #include <functional>
 #include <iterator>
 #include <memory>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -724,15 +725,17 @@ Device::BuiltinAction start_recovery(Device* device, const std::vector<std::stri
     ui->SetStage(st_cur, st_max);
   }
 
-  std::vector<std::string> title_lines =
-      android::base::Split(android::base::GetProperty("ro.mod.version", ""), ":");
-  title_lines.insert(std::begin(title_lines), "Scorpion Recovery");
+  // Extract the YYYYMMDD date from the full version string. Assume
+  // the first instance of "-[0-9]{8}-" (if any) has the desired date.
+  std::string ver = android::base::GetProperty("ro.scorpion.version", "");
+  std::smatch ver_date_match;
+  std::regex_search(ver, ver_date_match, std::regex("-(\\d{8})-"));
+  std::string ver_date = ver_date_match.str(1);  // Empty if no match.
 
-  if (android::base::GetBoolProperty("ro.build.ab_update", false)) {
-    std::string slot = android::base::GetProperty("ro.boot.slot_suffix", "");
-    if (android::base::StartsWith(slot, "_")) slot.erase(0, 1);
-    title_lines.push_back("Active slot: " + slot);
-  }
+  std::vector<std::string> title_lines = {
+    "Scorpion " + android::base::GetProperty("ro.mod.version", "(unknown)") +
+        " (" + ver_date + ")",
+  };
   ui->SetTitle(title_lines);
 
   ui->ResetKeyInterruptStatus();
