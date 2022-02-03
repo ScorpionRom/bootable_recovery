@@ -760,7 +760,7 @@ Device::BuiltinAction start_recovery(Device* device, const std::vector<std::stri
   std::string ver_date = ver_date_match.str(1);  // Empty if no match.
 
   std::vector<std::string> title_lines = {
-    "Scorpion " + android::base::GetProperty("ro.scorpion.build.version", "(unknown)") +
+    "Scorpion " + android::base::GetProperty("ro.mod.version", "") +
         " (" + ver_date + ")",
   };
   ui->SetTitle(title_lines);
